@@ -196,15 +196,10 @@ def readBNTX(f):
     if bytes_to_string(header.magic, 4) != "BNTX":
         raise ValueError("Invalid file header!")
 
-    print("")
-    print("File name: " + bytes_to_string(f[header.fileNameAddr:header.fileNameAddr+12]))
-
     nx = NXHeader(bom)
     nx.data(f, pos)
     pos += nx.size
 
-    print("")
-    print("Textures count: " + str(nx.count))
 
     textures = []
 
@@ -218,9 +213,6 @@ def readBNTX(f):
 
         nameLen = struct.unpack(bom + 'H', f[info.nameAddr:info.nameAddr + 2])[0]
         name = bytes_to_string(f[info.nameAddr + 2:info.nameAddr + 2 + nameLen], nameLen)
-
-        print("")
-        print("Image " + str(i + 1) + " name: " + name)
 
         compSel = []
         compSels = {0: "0", 1: "1", 2: "Red", 3: "Green", 4: "Blue", 5: "Alpha"}
@@ -236,31 +228,6 @@ def readBNTX(f):
             types[info.type_] = "Unknown"
 
         tileModes = {0: "TILING_MODE_PITCH", 1: "TILING_MODE_TILED"}
-
-        # print("TileMode: " + tileModes[info.tileMode])
-        print("Dimensions: " + str(info.dim))
-        print("Flags: " + str(info.flags))
-        print("Swizzle: " + str(info.swizzle))
-        print("Number of Mipmaps: " + str(info.numMips - 1))
-
-        if info.format_ in formats:
-            print("Format: " + formats[info.format_])
-
-        else:
-            print("Format: " + str(info.format_))
-
-        print("Width: " + str(info.width))
-        print("Height: " + str(info.height))
-        print("Number of faces: " + str(info.numFaces))
-        print("Size Range: " + str(info.sizeRange))
-        print("Block Height: " + str(1 << info.sizeRange))
-        print("Image Size: " + str(info.imageSize))
-        print("Alignment: " + str(info.alignment))
-        print("Channel 1: " + compSels[compSel[3]])
-        print("Channel 2: " + compSels[compSel[2]])
-        print("Channel 3: " + compSels[compSel[1]])
-        print("Channel 4: " + compSels[compSel[0]])
-        print("Image type: " + types[info.type_])
 
         dataAddr = struct.unpack(bom + 'q', f[info.ptrsAddr:info.ptrsAddr + 8])[0]
         mipOffsets = {0: 0}
@@ -379,7 +346,7 @@ def saveTextures(textures, folder_path):
                 with open(output_path, "wb+") as output:
                     output.write(b''.join([hdr, result]))
 
-            print(f"Texture saved: {output_path}")
+            print(f"Processing {tex.name}")
 
         else:
             print("")
@@ -421,4 +388,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-        astcenc-sse4.1.exe -dh source.astc destination.png
+# astcenc-sse4.1.exe -dh source.astc destination.png
