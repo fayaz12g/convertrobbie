@@ -2,6 +2,10 @@ import os
 import struct
 import sys
 import dds
+import customtkinter
+import tkinter
+from tkinter import filedialog
+from customtkinter import *
 
 try:
     import pyximport
@@ -360,9 +364,6 @@ def saveTextures(textures, folder_path):
 
 
 def main():
-    print("BNTX Extractor v0.6")
-    print("(C) 2017-2018 AboodXD")
-
     if len(sys.argv) < 2:
         print("Usage: python bntx_converter.py <folder_path>")
         sys.exit(1)
@@ -385,7 +386,19 @@ def main():
 
     print("Conversion completed.")
 
-if __name__ == '__main__':
-    main()
+def select_bntx_folder():
+    folder_path = askdirectory()
+    main(folder_path)
+
+
+root = customtkinter.CTk()
+root.title(f"Convert Robbie Test")
+root.geometry("500x720")
+
+customtkinter.set_appearance_mode("system")
+customtkinter.set_default_color_theme("green")  
+
+bntx_folder_button = customtkinter.CTkButton(master=root, text="Custom Output Folder", fg_color="gray", hover_color="black", command=select_bntx_folder)
+bntx_folder_button.pack()
 
 # astcenc-sse4.1.exe -dh source.astc destination.png
