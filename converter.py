@@ -5,7 +5,10 @@ import dds
 import customtkinter
 import tkinter
 from tkinter import filedialog
+from tkinter import scrolledtext
+from tkinter.filedialog import askdirectory
 from customtkinter import *
+from threading import Thread
 
 try:
     import pyximport
@@ -362,13 +365,32 @@ def saveTextures(textures, folder_path):
             else:
                 print("Unsupported number of faces.")
 
+class PrintRedirector:
+    def __init__(self, text_widget):
+        self.text_widget = text_widget
+        self.buffer = ""
+        self.text_widget.configure(state='disabled')  # Disable user input
+        self.text_widget.tag_configure("custom_tag", background='lightgray', foreground='black')
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python bntx_converter.py <folder_path>")
-        sys.exit(1)
+    def write(self, text):
+        self.buffer += text
+        self.text_widget.configure(state='normal')  # Enable writing
+        self.text_widget.insert("end", text, "custom_tag")  # Apply custom_tag to the inserted text
+        self.text_widget.see("end")
+        self.text_widget.configure(state='disabled')  # Disable user input again
 
-    folder_path = sys.argv[1]
+    def flush(self):
+        self.text_widget.configure(state='normal')  # Enable writing
+        try:
+            self.text_widget.insert("end", self.buffer, "custom_tag")  # Apply custom_tag to the buffered text
+        except Exception as e:
+            self.text_widget.insert("end", f"Error: {e}\n", "custom_tag")  # Display the exception message with custom_tag
+        finally:
+            self.text_widget.see("end")
+            self.text_widget.configure(state='disabled')  # Disable user input again
+            self.buffer = ""
+
+def main(folder_path):
 
     if not os.path.exists(folder_path):
         print("Error: The specified folder does not exist.")
@@ -390,15 +412,24 @@ def select_bntx_folder():
     folder_path = askdirectory()
     main(folder_path)
 
+def do_stuff():
+    sys.stdout = PrintRedirector(scrolled_text)
+    t = Thread(target=select_bntx_folder)
+    t.start()
 
 root = customtkinter.CTk()
 root.title(f"Convert Robbie Test")
-root.geometry("500x720")
+root.geometry("500x520")
 
 customtkinter.set_appearance_mode("system")
-customtkinter.set_default_color_theme("green")  
+customtkinter.set_default_color_theme("blue")  
 
-bntx_folder_button = customtkinter.CTkButton(master=root, text="Custom Output Folder", fg_color="gray", hover_color="black", command=select_bntx_folder)
-bntx_folder_button.pack()
+scrolled_text = scrolledtext.ScrolledText(master=root, width=50, height=18, font=("Helvetica", 10))
+scrolled_text.pack(pady=50)
 
+bntx_folder_button = customtkinter.CTkButton(master=root, text="Convert BNTX Folder to ASTC", fg_color="blue", hover_color="darkblue", command=do_stuff)
+bntx_folder_button.pack(pady=25)
+
+
+root.mainloop()
 # astcenc-sse4.1.exe -dh source.astc destination.png
